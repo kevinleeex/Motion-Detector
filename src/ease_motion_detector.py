@@ -40,11 +40,12 @@ class EaseMotionDetector():
         self.frame = self.capture.read()[1]
         self.frame_w = self.frame.shape[1]  # frame width
         self.frame_h = self.frame.shape[0]  # frame height
+        self.frame_area = self.frame_w * self.frame_h  # frame area
         self.gray_frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
         self.fusion_frame = np.float32(self.frame)
         self.absdiff_frame = None
         self.previous_frame = None
-        self.frame_area = self.frame_w * self.frame_h  # frame area
+
 
         self.cur_contour = None
         self.cur_area = 0
@@ -57,15 +58,7 @@ class EaseMotionDetector():
             cv2.namedWindow(self.window_name)
             cv2.createTrackbar("Threshold", self.window_name, self.threshold, 100, self.onChanged)
 
-    def initRecorder(self):
-        """
-        Init the video recorder
-        """
-        fourcc = cv2.VideoWriter_fourcc(*"MPEG")
-        self.writer = cv2.VideoWriter('output2.avi', fourcc, 20, (640, 480))
-
     def run(self):
-        started_time = time.time()
         while True:
             cur_frame = self.capture.read()[1]
             ts_frame = time.time()  # time of current frame.
