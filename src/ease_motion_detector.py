@@ -26,12 +26,13 @@ __status__ = "Development"
 
 class EaseMotionDetector():
     def onChanged(self, val):
-        self.threshold = val
+        self.diff_thresh = val
 
-    def __init__(self, threshold=25, is_record=True, show_window=True):
+    def __init__(self, diff_thresh=25, move_sense=0.05, is_record=True, show_window=True):
         self.writer = None
         self.font = None
-        self.threshold = threshold
+        self.diff_thresh = diff_thresh
+        self.move_sense = move_sense
         self.is_record = is_record
         self.init_flag = True
         self.show_window = show_window
@@ -55,7 +56,7 @@ class EaseMotionDetector():
         if show_window:
             self.window_name = "Motion Detection Result"
             cv2.namedWindow(self.window_name)
-            cv2.createTrackbar("Threshold", self.window_name, self.threshold, 100, self.onChanged)
+            cv2.createTrackbar("Difference Threshold", self.window_name, self.diff_thresh, 100, self.onChanged)
 
     def run(self):
         while True:
@@ -94,7 +95,7 @@ class EaseMotionDetector():
         self.absdiff_frame = cv2.absdiff(cur_frame, self.previous_frame)  # abs(average - cur_frame)
 
         self.gray_frame = cv2.cvtColor(self.absdiff_frame, cv2.COLOR_BGR2GRAY)
-        cv2.threshold(self.gray_frame, 50, 255, cv2.THRESH_BINARY, self.gray_frame)
+        cv2.threshold(self.gray_frame, self.diff_thresh, 255, cv2.THRESH_BINARY, self.gray_frame)
 
         # define kernels
         dilate_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
@@ -114,10 +115,10 @@ class EaseMotionDetector():
             c = cv2.contourArea(contours[i])
             self.cur_area += c
 
-        val_area = (self.cur_area * 100) / self.frame_area  # calculate the ratio of cur_area/frame_area
+        val_area = self.cur_area / self.frame_area  # calculate the ratio of cur_area/frame_area
         self.cur_area = 0
 
-        if val_area > self.threshold:
+        if val_area > self.move_sense:
             return True
         else:
             return False
