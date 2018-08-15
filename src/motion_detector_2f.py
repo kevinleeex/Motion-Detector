@@ -2,6 +2,7 @@
 # encoding: utf-8
 import cv2
 import numpy as np
+
 """
 This is the 2 frame based motion detection algorithm.
 
@@ -25,21 +26,25 @@ def diffImg(t0, t1):
 
 
 cam = cv2.VideoCapture(0)
-
-winName = "Motion Detector"
+winName = "Motion Detector 2f"
 cv2.namedWindow(winName, cv2.WINDOW_AUTOSIZE)
 
-# Read two images first:
-t_minus = cv2.cvtColor(cam.read()[1], cv2.COLOR_RGB2GRAY)
+# Read two images at first:
+t_minus = cv2.cvtColor(cam.read()[1], cv2.COLOR_RGB2GRAY)  # previous frame
 t_img = cam.read()[1]
 t_source = np.copy(t_img)
-t = cv2.cvtColor(t_img, cv2.COLOR_RGB2GRAY)
+frame_w, frame_h, c = t_source.shape  # width and height of frame
+frame_area = frame_w * frame_h  # area of frame
+t = cv2.cvtColor(t_img, cv2.COLOR_RGB2GRAY)  # current frame
+
+# parameters
+ratio = 0.01
 
 while True:
     diff_img = diffImg(t_minus, t)
     ret, thresh_img = cv2.threshold(diff_img, 50, 255, cv2.THRESH_BINARY)
-    kernel_erode = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-    kernel_dilate = cv2.getStructuringElement(cv2.MORPH_RECT, (20, 20))
+    kernel_erode = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+    kernel_dilate = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (20, 20))
     erode_img = cv2.erode(thresh_img, kernel_erode)
     dilate_img = cv2.dilate(erode_img, kernel_dilate)
     out_binary, contours, hierarchy = cv2.findContours(dilate_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -49,7 +54,7 @@ while True:
         area = cv2.contourArea(cnt)
 
         # reduce the small region.
-        if (area < 100):
+        if (area < frame_area * ratio):
             c_min = []
             c_min.append(cnt)
             #  fill the small blob in black.
@@ -59,6 +64,7 @@ while True:
 
     cv2.drawContours(t_source, c_max, -1, (0, 0, 255), thickness=2)
     cv2.imshow(winName, t_source)
+    cv2.imshow("Diff_frame", dilate_img)
 
     # Read next image
     t_minus = t
@@ -70,5 +76,3 @@ while True:
     if key == 27:
         cv2.destroyWindow(winName)
         break
-
-print("Goodbye")

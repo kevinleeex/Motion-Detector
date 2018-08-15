@@ -8,10 +8,10 @@ import time
 This is average motion detection algorithm.
 
 Example:
-        $ python avg_motion_detector.py
+        $ python ease_motion_detector.py
 
 Todo:
-    * For module TODOs
+    * cca function
 
 """
 __author__ = "Kevin Lee"
@@ -24,7 +24,7 @@ __email__ = "kevinleeex@foxmail.com"
 __status__ = "Development"
 
 
-class AvgMotionDetector():
+class EaseMotionDetector():
     def onChanged(self, val):
         self.threshold = val
 
@@ -41,7 +41,7 @@ class AvgMotionDetector():
         self.frame_w = self.frame.shape[1]  # frame width
         self.frame_h = self.frame.shape[0]  # frame height
         self.gray_frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
-        self.average_frame = np.float32(self.frame)
+        self.fusion_frame = np.float32(self.frame)
         self.absdiff_frame = None
         self.previous_frame = None
         self.frame_area = self.frame_w * self.frame_h  # frame area
@@ -71,7 +71,7 @@ class AvgMotionDetector():
             ts_frame = time.time()  # time of current frame.
 
             t_img = self.processFrame(cur_frame)
-            # cv2.imshow("Test", t_img)
+            cv2.imshow("Diff", t_img)
             if self.hasMoved():
                 self.trigger_time = ts_frame
                 print("Object moved")
@@ -97,8 +97,8 @@ class AvgMotionDetector():
             self.previous_frame = cur_frame.copy()
             # self.average_frame = cv2.convertScaleAbs(cur_frame)
         else:
-            cv2.accumulateWeighted(cur_frame, self.average_frame, 0.05)  # compute average
-        self.previous_frame = cv2.convertScaleAbs(self.average_frame)
+            cv2.accumulateWeighted(cur_frame, self.fusion_frame, 0.05)  # compute average
+        self.previous_frame = cv2.convertScaleAbs(self.fusion_frame)
         self.absdiff_frame = cv2.absdiff(cur_frame, self.previous_frame)  # abs(average - cur_frame)
 
         self.gray_frame = cv2.cvtColor(self.absdiff_frame, cv2.COLOR_BGR2GRAY)
@@ -139,5 +139,5 @@ class AvgMotionDetector():
 
 
 if __name__ == '__main__':
-    detect = AvgMotionDetector()
+    detect = EaseMotionDetector()
     detect.run()
