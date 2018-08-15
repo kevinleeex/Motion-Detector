@@ -63,16 +63,17 @@ class EaseMotionDetector():
             cur_frame = self.capture.read()[1]
             ts_frame = time.time()  # time of current frame.
 
-            t_img = self.processFrame(cur_frame)
-            cv2.imshow("Diff", t_img)
+            self.processFrame(cur_frame)
+
             if self.hasMoved():
                 self.trigger_time = ts_frame
                 print("Object moved")
+            cv2.imshow("Diff", self.gray_frame)
             cv2.drawContours(cur_frame, self.cur_contour, -1, (0, 0, 255), 2)
 
             if self.show_window:
                 cv2.imshow(self.window_name, cur_frame)
-            key = cv2.waitKey(100) % 0x100
+            key = cv2.waitKey(50) % 0x100
             if key == 27:
                 break
 
@@ -111,10 +112,15 @@ class EaseMotionDetector():
         """
         out, contours, hierarchy = cv2.findContours(self.gray_frame, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         self.cur_contour = contours
+        max_contour = []
         for i in range(len(contours)):
             c = cv2.contourArea(contours[i])
+            if c < 0.005 * self.frame_area:
+                cv2.drawContours(self.gray_frame, contours, i, (0, 0, 0), -1)
+            else:
+                max_contour.append(contours[i])
             self.cur_area += c
-
+        self.cur_contour = max_contour
         val_area = self.cur_area / self.frame_area  # calculate the ratio of cur_area/frame_area
         self.cur_area = 0
 
@@ -129,8 +135,11 @@ class EaseMotionDetector():
         :param src_img: source image to analysis
         :return:
         """
+        contours = self.cur_contour
+        for i in range(len(contours)):
+            pass
 
 
 if __name__ == '__main__':
-    detect = EaseMotionDetector()
+    detect = EaseMotionDetector(diff_thresh=40)
     detect.run()
