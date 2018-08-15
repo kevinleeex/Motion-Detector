@@ -46,7 +46,6 @@ class EaseMotionDetector():
         self.absdiff_frame = None
         self.previous_frame = None
 
-
         self.cur_contour = None
         self.cur_area = 0
         self.is_recording = False
