@@ -116,6 +116,7 @@ class EaseMotionDetector():
         for i in range(len(contours)):
             c = cv2.contourArea(contours[i])
             if c < 0.005 * self.frame_area:
+                # fill small white blob in black
                 cv2.drawContours(self.gray_frame, contours, i, (0, 0, 0), -1)
             else:
                 max_contour.append(contours[i])
