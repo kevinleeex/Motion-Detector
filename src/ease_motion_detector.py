@@ -28,12 +28,11 @@ class EaseMotionDetector():
     def onChanged(self, val):
         self.diff_thresh = val
 
-    def __init__(self, diff_thresh=25, move_sense=0.05, is_record=True, show_window=True):
+    def __init__(self, diff_thresh=25, move_sense=0.05, show_window=True):
         self.writer = None
         self.font = None
         self.diff_thresh = diff_thresh
         self.move_sense = move_sense
-        self.is_record = is_record
         self.init_flag = True
         self.show_window = show_window
         self.frame = None
