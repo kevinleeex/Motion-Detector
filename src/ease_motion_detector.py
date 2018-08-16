@@ -48,8 +48,6 @@ class EaseMotionDetector():
 
         self.cur_contour = None
         self.cur_area = 0
-        self.is_recording = False
-        self.trigger_time = 0  # timestamp of last detection
 
         # show window with track bar.
         if show_window:
@@ -60,12 +58,9 @@ class EaseMotionDetector():
     def run(self):
         while True:
             cur_frame = self.capture.read()[1]
-            ts_frame = time.time()  # time of current frame.
-
             self.processFrame(cur_frame)
 
             if self.hasMoved():
-                self.trigger_time = ts_frame
                 print("Object moved")
             cv2.imshow("Diff", self.gray_frame)
             cv2.drawContours(cur_frame, self.cur_contour, -1, (0, 0, 255), 2)
